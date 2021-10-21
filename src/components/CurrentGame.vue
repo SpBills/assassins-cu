@@ -39,7 +39,12 @@ export default {
                 return;
             }
 
-            const next: number = players.findIndex((player: String) => player === user.value.email) + 1;
+            var next: number = players.findIndex((player: String) => player === user.value.email) + 1;
+
+            if (next > players.length - 1) {
+                next = 0;
+            }
+
             const nextPlayer: string = players[next];
 
             target.value = nextPlayer;
