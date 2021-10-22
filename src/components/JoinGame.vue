@@ -1,9 +1,9 @@
 <template>
 	<div>
 		<h1>Enter your game's ID</h1>
-		<input v-model="gameId" type="text" />
+		<input class="border-b-2" v-model="gameId" type="text" />
 
-		<button @click="join">Join</button>
+		<button class="bg-blue-500 text-white px-5 py-3 rounded ml-5" @click="join">Join</button>
 	</div>
 </template>
 
@@ -12,8 +12,10 @@ import { collection, doc, getFirestore, getDocs, DocumentData, updateDoc, arrayU
 
 import { ref } from "@vue/reactivity";
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { useRouter } from 'vue-router';
 export default {
 	setup() {
+		const router = useRouter();
 		const gameId = ref("");
         var user = {} as User;
 		const games: DocumentData[] = [];
@@ -50,12 +52,13 @@ export default {
 
             await updateDoc(userRef, {
                 game: game.id
-            })
+            });
+			router.back();
         };
 
 		return {
 			gameId,
-            join
+            join,
 		};
 	},
 };

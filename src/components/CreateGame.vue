@@ -1,38 +1,94 @@
 <template>
-    <div>
-        <p>Game name: </p>
-        <input v-model="gameName" type="text">
+	<div>
+		<div v-if="!gameId">
+			<p>Enter the name of your party</p>
+			<input class="border-b-2" v-model="gameName" type="text" />
 
-        <button @click="create">Create</button>
-    </div>
+			<button
+				class="bg-blue-500 text-white px-5 py-3 rounded ml-5"
+				@click="create"
+			>
+				Create
+			</button>
+		</div>
+		<div v-else>
+			<p v-if="gameId">Your game ID is {{ gameId }}</p>
+			<qrcode-vue :value="gameId"></qrcode-vue>
+			<small>Copy this and send it to everyone participating!</small>
+
+			<button
+				@click="back"
+				class="bg-blue-500 text-white px-5 py-3 rounded ml-5"
+			>
+				Go back
+			</button>
+		</div>
+	</div>
 </template>
 
 <script lang="ts">
-import { collection, doc, getFirestore, setDoc, Timestamp } from "firebase/firestore"; 
+import {
+	addDoc,
+	collection,
+	doc,
+	getFirestore,
+	Timestamp,
+	updateDoc,
+} from "firebase/firestore";
+import QrcodeVue from "qrcode.vue";
 
-import { ref } from '@vue/reactivity'
+import { ref } from "@vue/reactivity";
+import { useRouter } from "vue-router";
+import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 export default {
-    setup() {
-        const gameName = ref("");
+	components: {
+		QrcodeVue,
+	},
+	setup() {
+		const router = useRouter();
+		const gameName = ref("");
+		const db = getFirestore();
+		const gamesCollection = collection(db, "games");
+		var user = {} as User;
+		const auth = getAuth();
 
-        const db = getFirestore();
+		const getUser = () => {
+			onAuthStateChanged(auth, (u) => {
+				user = u!;
+			});
+		};
 
-        const gamesCollection = collection(db, "games")
+		getUser();
 
-        const create = async () => {
-            const game = {
-                name: gameName.value,
-                time: Timestamp.now(),
-                users: []
-            }
+		const gameId = ref("");
 
-            await setDoc(doc(gamesCollection), game);
-        }
+		const create = async () => {
+			const game = {
+				name: gameName.value,
+				time: Timestamp.now(),
+				users: [user.email],
+			};
 
-        return {
-            gameName,
-            create
-        }
-    },
-}
+			const createdDoc = await addDoc(gamesCollection, game);
+
+			const userRef = doc(db, "users", user.email!);
+			await updateDoc(userRef, {
+				game: createdDoc.id,
+			});
+
+			gameId.value = createdDoc.id;
+		};
+
+		const back = async () => {
+			router.back();
+		};
+
+		return {
+			gameName,
+			create,
+			gameId,
+			back,
+		};
+	},
+};
 </script>

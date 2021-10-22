@@ -1,6 +1,5 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link>
-  </div>
-  <router-view/>
+	<div class="m-5">
+		<router-view />
+	</div>
 </template>

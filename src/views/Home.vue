@@ -1,12 +1,36 @@
 <template>
-	<div>
-		<button @click="login" v-if="!loggedIn()">Login</button>
-		<button @click="logout" v-else>Logout</button>
-		<br />
-		<button @click="createGame" v-if="loggedIn()">Create Game</button>
-		<button @click="joinGame" v-if="loggedIn()">Join Game</button>
+	<div class="w-100 h-screen">
+		<div class="flex flex-col w-1/3 shadow p-3" v-if="loggedIn()">
+			<button
+				@click="logout"
+				class="bg-gray-500 mb-1 min-w-min w-1/3 px-5 py-2 rounded text-white"
+			>
+				Logout
+			</button>
 
-		<current-game v-if="loggedIn()" :game="game" :user="user" />
+			<button
+				@click="createGame"
+				class="bg-green-500 mb-1 text-white p-5 rounded"
+			>
+				Create Game
+			</button>
+			<button
+				@click="joinGame"
+				class="bg-blue-500 mb-1 text-white p-5 rounded"
+			>
+				Join Game
+			</button>
+		</div>
+		<div v-else>
+			<button
+				@click="login"
+				class="bg-blue-500 px-5 py-2 rounded text-white"
+			>
+				Login
+			</button>
+		</div>
+
+		<current-game v-if="loggedIn() && game" :game="game" :user="user" />
 	</div>
 </template>
 
@@ -20,17 +44,17 @@ import {
 	User,
 } from "firebase/auth";
 
-import { ref } from "@vue/reactivity";
+import { reactive, ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import CurrentGame from "@/components/CurrentGame.vue";
-import { doc, getFirestore, getDoc, setDoc } from "firebase/firestore";
+import { doc, getFirestore, getDoc, setDoc, arrayUnion } from "firebase/firestore";
 
 export default {
 	components: { CurrentGame },
 	setup() {
 		const router = useRouter();
-		var user = ref({} as User);
 		const db = getFirestore();
+		var user = ref({} as User);
 		const game = ref("");
 
 		const auth = getAuth();
@@ -40,7 +64,7 @@ export default {
 			await signInWithPopup(auth, provider);
 
 			const userRef = doc(db, "users", user.value.email!);
-			setDoc(userRef, { game: "" }, { merge: true });
+			setDoc(userRef, { game: arrayUnion("") }, { merge: true });
 		};
 
 		const logout = async () => {
