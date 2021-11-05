@@ -12,8 +12,7 @@
 			</button>
 		</div>
 		<div v-else>
-			<p v-if="gameId">Your game ID is {{ gameId }}</p>
-			<qrcode-vue :value="gameId"></qrcode-vue>
+			<game-data :gameId="gameId" />
 			<small>Copy this and send it to everyone participating!</small>
 
 			<button
@@ -35,14 +34,14 @@ import {
 	Timestamp,
 	updateDoc,
 } from "firebase/firestore";
-import QrcodeVue from "qrcode.vue";
 
 import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
+import GameData from './GameData.vue';
 export default {
 	components: {
-		QrcodeVue,
+		GameData,
 	},
 	setup() {
 		const router = useRouter();

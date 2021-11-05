@@ -45,7 +45,6 @@ export default {
             const gameRef = doc(db, "games", game.id);
             const userRef = doc(db, "users", user.email!);
 
-
             await updateDoc(gameRef, {
                 users: arrayUnion(user!.email)
             });
