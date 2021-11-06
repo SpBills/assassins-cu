@@ -4,12 +4,19 @@
 			>You are currently logged in as {{ user.email }}</small
 		>
 
-		<div v-if="!elim">
-			<h1 v-if="target && !won">Your target is: {{ target }}</h1>
-			<h1 v-else-if="!target && !won">You are alone.</h1>
-			<h1 v-else>You won!</h1>
+		<div>
+			<h1 class="text-4xl font-extrabold" v-if="won">You won!</h1>
+			<h1 v-else-if="alone">You are alone.</h1>
+			<h1 v-else-if="target">Your target is: {{ target }}</h1>
 		</div>
 		<div>
+			<button
+				class="p-5 bg-gray-700 rounded font-bold text-white mt-5"
+				@click="leave"
+				v-if="won || alone"
+			>
+				Leave
+			</button>
 			<button
 				class="p-5 bg-red-500 rounded font-bold text-white mt-5"
 				@click="
@@ -17,12 +24,12 @@
 						elimPrompt = true;
 					}
 				"
-				v-if="!elim"
+				v-if="!alone"
 				v-show="!won"
 			>
 				Eliminated
 			</button>
-			<h1 v-else>You were eliminated.</h1>
+			
 		</div>
 
 		<div v-if="elimPrompt" class="flex flex-col">
@@ -54,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { ref } from "@vue/reactivity";
+import { Ref, ref } from "@vue/reactivity";
 import {
 	arrayRemove,
 	doc,
@@ -63,6 +70,9 @@ import {
 	updateDoc,
 } from "firebase/firestore";
 import { toRef } from "vue";
+import EnrolledUser from "@/models/EnrolledUser";
+import { User } from "firebase/auth";
+import Game from "@/models/Game";
 export default {
 	props: {
 		game: {
@@ -74,51 +84,82 @@ export default {
 			required: true,
 		},
 	},
-	setup(props: any) {
+	emits: ['changeGame'],
+	setup(props: any, context: any) {
+		const emit = context.emit;
 		const target = ref("");
 		const db = getFirestore();
 
-		const won = ref(false);
-		const elim = ref(false);
+		// Some prompting variables.
 		const elimPrompt = ref(false);
+		const won = ref(false);
+		const alone = ref(false);
 
-		const game = toRef(props, "game");
-		const user = toRef(props, "user");
+		const gameName = toRef(props, "game") as Ref<string>;
+		const user = toRef(props, "user") as Ref<User>;
 
 		const dead = async () => {
-			const gameRef = doc(db, "games", game.value);
-			const userRef = doc(db, "users", user.value.email);
+			const gameRef = doc(db, "games", gameName.value);
+			const userRef = doc(db, "users", user.value.email!);
+			const fullGame = (await getDoc(gameRef)).data()!;
 
+			let enrolledUser = fullGame.users.find(
+				(enrolled: EnrolledUser) => enrolled.email == user.value.email
+			);
+
+			// Check if there will only be one user left after removing this user.
 			await updateDoc(gameRef, {
-				users: arrayRemove(user.value.email),
+				users: arrayRemove(enrolledUser),
+				won: fullGame.users.length - 1 === 1,
 			});
-
 			await updateDoc(userRef, {
 				game: "",
 			});
 
-			elim.value = true;
+			emit("changeGame", "");
+
 			elimPrompt.value = false;
 		};
 
-		const getTarget = async () => {
-			console.log(game.value);
-			const gameRef = doc(db, "games", game.value);
-			const docSnap = await getDoc(gameRef);
+		const leave = async () => {
+			const gameRef = doc(db, "games", gameName.value);
+			const userRef = doc(db, "users", user.value.email!);
+			const fullGame = (await getDoc(gameRef)).data()!;
 
-			const players = docSnap.data()!.users as string[];
-			players.sort((a, b) => a > b ? -1 : 1);
+			let enrolledUser = fullGame.users.find(
+				(enrolled: EnrolledUser) => enrolled.email == user.value.email
+			);
+
+			await updateDoc(gameRef, {
+				users: arrayRemove(enrolledUser),
+				won: fullGame.users.length - 1 === 1,
+			});
+
+
+			await updateDoc(userRef, {
+				game: "",
+			});
+			emit("changeGame", "");
+		}
+
+		const getTarget = async () => {
+			const gameRef = doc(db, "games", gameName.value);
+			const fullGame = (await getDoc(gameRef)).data()! as Game;
+
+			const players = fullGame.users as EnrolledUser[];
+			won.value = fullGame.won;
+			players.sort((a, b) => (a.sortId > b.sortId ? -1 : 1));
 			var next: number =
 				players.findIndex(
-					(player: string) => player === user.value.email
+					(player: EnrolledUser) => player.email === user.value.email
 				) + 1;
 			if (next >= players.length) {
 				next = 0;
 			}
 
-			const nextPlayer: string = players[next];
-
-			target.value = nextPlayer;
+			const nextPlayer: EnrolledUser = players[next];
+			alone.value = nextPlayer.email === user.value.email;
+			target.value = nextPlayer.name + " (" + nextPlayer.email + ")";
 		};
 
 		getTarget();
@@ -127,8 +168,9 @@ export default {
 			target,
 			dead,
 			won,
-			elim,
+			alone,
 			elimPrompt,
+			leave
 		};
 	},
 };

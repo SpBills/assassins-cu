@@ -1,7 +1,6 @@
 <template>
 	<div>
 		<p>Game Code: {{ gameId }}</p>
-		<qrcode-vue class="mx-auto mt-5" v-if="gameId" :value="gameId"></qrcode-vue>
 	</div>
 </template>
 

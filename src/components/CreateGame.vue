@@ -39,6 +39,8 @@ import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import GameData from './GameData.vue';
+import Game from "@/models/Game"
+import EnrolledUser from '@/models/EnrolledUser';
 export default {
 	components: {
 		GameData,
@@ -62,11 +64,17 @@ export default {
 		const gameId = ref("");
 
 		const create = async () => {
+			const userObj = {
+				email: user.email,
+				name: user.displayName,
+				sortId: Math.floor(Math.random() * 100000)
+			} as EnrolledUser;
+
 			const game = {
 				name: gameName.value,
 				time: Timestamp.now(),
-				users: [user.email],
-			};
+				users: [userObj],
+			} as Game;
 
 			const createdDoc = await addDoc(gamesCollection, game);
 
