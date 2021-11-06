@@ -1,9 +1,5 @@
 <template>
 	<div class="flex flex-col">
-		<small class="text-sm mb-5"
-			>You are currently logged in as {{ user.email }}</small
-		>
-
 		<div>
 			<h1 class="text-4xl font-extrabold" v-if="won">You won!</h1>
 			<h1 v-else-if="alone">You are alone.</h1>
