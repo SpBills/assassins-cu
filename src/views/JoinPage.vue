@@ -1,6 +1,7 @@
 <template>
 	<div>
 		<h1>{{error}}</h1>
+
 	</div>
 </template>
 
@@ -33,13 +34,16 @@ export default {
 
 			const userRef = doc(db, "users", user.value.email!);
 			setDoc(userRef, { game: "" }, { merge: true });
+
+			error.value = "Log in please!"
+
+			join();
 		};
 
 		const getUser = async () => {
 			onAuthStateChanged(auth, (u) => {
 				if (u) {
 					user.value = u!;
-
 				} else {
 					login();
 				}
@@ -85,7 +89,6 @@ export default {
 		};
 
 		onLoad();
-
 
 		return {
 			user,
