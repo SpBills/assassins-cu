@@ -171,7 +171,7 @@ export default {
 			target.value = nextPlayer.name + " (" + nextPlayer.email + ")";
 		};
 
-		getTarget();
+		setInterval(getTarget, 1000);
 
 		return {
 			target,
