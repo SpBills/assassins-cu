@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Home from '../views/Home.vue'
-import CreateGame from "../components/CreateGame.vue";
-import JoinGame from "../components/JoinGame.vue";
+import CreateGame from "../views/CreateGame.vue";
+import JoinGame from "../views/JoinGame.vue";
+import JoinPage from "../views/JoinPage.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -15,6 +16,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/join",
     component: JoinGame
+  },
+  {
+    path: "/join/:id",
+    component: JoinPage
   }
 ]
 

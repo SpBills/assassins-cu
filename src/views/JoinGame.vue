@@ -1,6 +1,6 @@
 <template>
-	<div class="flex flex-col">
-		<h1>Enter your game's ID</h1>
+	<main-skeleton class="flex flex-col">
+		<h1>Enter your game's code</h1>
 		<small v-if="error">Error: {{ error }}</small>
 		<div>
 			<input class="border-b-2" v-model="gameId" type="text" />
@@ -12,7 +12,7 @@
 				Join
 			</button>
 		</div>
-	</div>
+	</main-skeleton>
 </template>
 
 <script lang="ts">
@@ -30,7 +30,11 @@ import { ref } from "@vue/reactivity";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "vue-router";
 import Game from "@/models/Game";
+import MainSkeleton from "../components/MainSkeleton.vue";
 export default {
+	components: {
+		MainSkeleton
+	},
 	setup() {
 		const router = useRouter();
 		const gameId = ref("");
@@ -47,9 +51,9 @@ export default {
 			});
 		};
 
-		getUser();
-
 		const onLoad = async () => {
+			getUser();
+
 			const querySnapshot = await getDocs(collection(db, "games"));
 			querySnapshot.forEach((doc) => {
 				games.push(doc);
@@ -68,6 +72,7 @@ export default {
 				name: user.displayName,
 				email: user.email,
 				sortId: Math.floor(Math.random() * 100000),
+				eliminated: false
 			} as EnrolledUser;
 
 			if (!gameData.won) {

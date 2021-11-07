@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<main-skeleton>
 		<div v-if="!gameId">
 			<p>Enter the name of your party</p>
 			<input class="border-b-2" v-model="gameName" type="text" />
@@ -22,7 +22,7 @@
 				Go back
 			</button>
 		</div>
-	</div>
+	</main-skeleton>
 </template>
 
 <script lang="ts">
@@ -38,12 +38,14 @@ import {
 import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import GameData from './GameData.vue';
+import GameData from '../components/GameData.vue';
 import Game from "@/models/Game"
 import EnrolledUser from '@/models/EnrolledUser';
+import MainSkeleton from "../components/MainSkeleton.vue"
 export default {
 	components: {
 		GameData,
+		MainSkeleton
 	},
 	setup() {
 		const router = useRouter();
@@ -67,7 +69,8 @@ export default {
 			const userObj = {
 				email: user.email,
 				name: user.displayName,
-				sortId: Math.floor(Math.random() * 100000)
+				sortId: Math.floor(Math.random() * 100000),
+				eliminated: false
 			} as EnrolledUser;
 
 			const game = {

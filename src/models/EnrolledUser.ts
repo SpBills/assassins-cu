@@ -4,5 +4,6 @@
 export default interface EnrolledUser {
     email: string,
     name: string,
-    sortId: number
+    sortId: number,
+    eliminated: boolean
 }

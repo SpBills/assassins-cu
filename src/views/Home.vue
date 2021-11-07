@@ -85,12 +85,6 @@ export default {
 			setDoc(userRef, { game: "" }, { merge: true });
 		};
 
-		const changeGame = (evt: any) => {
-			console.log("hit");
-			console.log(evt);
-			game.value = evt;
-		};
-
 		const logout = async () => {
 			await signOut(auth);
 		};
@@ -106,6 +100,10 @@ export default {
 				game.value = docSnap.data()!.game;
 			});
 		};
+
+		const changeGame = (evt: string) => {
+			game.value = evt;
+		}
 
 		const loggedIn = () => {
 			return user.value;
@@ -129,7 +127,7 @@ export default {
 			createGame,
 			joinGame,
 			game,
-			changeGame,
+			changeGame
 		};
 	},
 };

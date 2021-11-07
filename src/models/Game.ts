@@ -9,5 +9,6 @@ export default interface Game {
     name: string,
     time: Timestamp,
     won: boolean,
-    users: EnrolledUser[]
+    users: EnrolledUser[],
+    eliminated: EnrolledUser[]
 }

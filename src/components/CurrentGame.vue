@@ -1,7 +1,13 @@
 <template>
 	<div class="flex flex-col">
 		<div>
-			<h1 class="text-4xl font-extrabold" v-if="won">You won!</h1>
+			<h1 class="text-4xl font-extrabold" v-if="won">
+				{{ winner }} has won the game!
+			</h1>
+			<h1 v-else-if="elim">
+				You have been eliminated. There are
+				{{ game.users.length }} players left.
+			</h1>
 			<h1 v-else-if="alone">You are alone.</h1>
 			<h1 v-else-if="target">Your target is: {{ target }}</h1>
 		</div>
@@ -9,7 +15,7 @@
 			<button
 				class="p-5 bg-gray-700 rounded font-bold text-white mt-5"
 				@click="leave"
-				v-if="won || alone"
+				v-if="won || alone || elim"
 			>
 				Leave
 			</button>
@@ -20,12 +26,10 @@
 						elimPrompt = true;
 					}
 				"
-				v-if="!alone"
-				v-show="!won"
+				v-if="!alone && !elim && !won"
 			>
 				Eliminated
 			</button>
-			
 		</div>
 
 		<div v-if="elimPrompt" class="flex flex-col">
@@ -60,6 +64,7 @@
 import { Ref, ref } from "@vue/reactivity";
 import {
 	arrayRemove,
+	arrayUnion,
 	doc,
 	getDoc,
 	getFirestore,
@@ -80,23 +85,26 @@ export default {
 			required: true,
 		},
 	},
-	emits: ['changeGame'],
+	emits: ["changeGame"],
 	setup(props: any, context: any) {
 		const emit = context.emit;
+
 		const target = ref("");
 		const db = getFirestore();
+		const game = ref({} as Game);
+		const winner = ref("");
 
 		// Some prompting variables.
 		const elimPrompt = ref(false);
 		const won = ref(false);
 		const alone = ref(false);
+		const elim = ref(false);
 
 		const gameName = toRef(props, "game") as Ref<string>;
 		const user = toRef(props, "user") as Ref<User>;
 
 		const dead = async () => {
 			const gameRef = doc(db, "games", gameName.value);
-			const userRef = doc(db, "users", user.value.email!);
 			const fullGame = (await getDoc(gameRef)).data()!;
 
 			let enrolledUser = fullGame.users.find(
@@ -108,49 +116,54 @@ export default {
 				users: arrayRemove(enrolledUser),
 				won: fullGame.users.length - 1 === 1,
 			});
-			await updateDoc(userRef, {
-				game: "",
+			enrolledUser.eliminated = true;
+			elim.value = true;
+			await updateDoc(gameRef, {
+				eliminated: arrayUnion(enrolledUser),
 			});
 
-			emit("changeGame", "");
+            getTarget();
 
 			elimPrompt.value = false;
 		};
 
 		const leave = async () => {
-			const gameRef = doc(db, "games", gameName.value);
 			const userRef = doc(db, "users", user.value.email!);
-			const fullGame = (await getDoc(gameRef)).data()!;
-
-			let enrolledUser = fullGame.users.find(
-				(enrolled: EnrolledUser) => enrolled.email == user.value.email
-			);
-
-			await updateDoc(gameRef, {
-				users: arrayRemove(enrolledUser),
-				won: fullGame.users.length - 1 === 1,
-			});
-
 
 			await updateDoc(userRef, {
 				game: "",
 			});
 			emit("changeGame", "");
-		}
+		};
 
 		const getTarget = async () => {
 			const gameRef = doc(db, "games", gameName.value);
 			const fullGame = (await getDoc(gameRef)).data()! as Game;
+			game.value = fullGame;
 
 			const players = fullGame.users as EnrolledUser[];
 			won.value = fullGame.won;
+
+			if (fullGame.won) {
+				winner.value = fullGame.users[0].name;
+			}
+
 			players.sort((a, b) => (a.sortId > b.sortId ? -1 : 1));
 			var next: number =
 				players.findIndex(
 					(player: EnrolledUser) => player.email === user.value.email
 				) + 1;
+
 			if (next >= players.length) {
 				next = 0;
+			}
+
+			var me: EnrolledUser | undefined = players.find(
+				(player) => player.email === user.value.email
+			)!;
+			if (me === undefined) {
+				elim.value = true;
+				return;
 			}
 
 			const nextPlayer: EnrolledUser = players[next];
@@ -166,7 +179,10 @@ export default {
 			won,
 			alone,
 			elimPrompt,
-			leave
+			leave,
+			game,
+			elim,
+			winner,
 		};
 	},
 };
