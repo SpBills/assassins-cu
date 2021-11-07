@@ -82,7 +82,7 @@ export default {
 			await signInWithPopup(auth, provider);
 
 			const userRef = doc(db, "users", user.value.email!);
-			setDoc(userRef, { game: "" }, { merge: true });
+			setDoc(userRef, { logged: true }, { merge: true });
 		};
 
 		const logout = async () => {
