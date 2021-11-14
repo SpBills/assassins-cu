@@ -75,6 +75,11 @@ export default {
 				eliminated: false
 			} as EnrolledUser;
 
+			if (gameData.users.find((user) => user.email === userObj.email) !== undefined) {
+				// Do something later.
+				// TODO
+			}
+
 			if (!gameData.won) {
 				await updateDoc(gameRef, {
 					users: arrayUnion(userObj),
@@ -83,7 +88,7 @@ export default {
 				await updateDoc(userRef, {
 					game: game.id,
 				});
-				router.back();
+				router.replace("/");
 			} else {
 				error.value = "Game has already finished.";
 			}

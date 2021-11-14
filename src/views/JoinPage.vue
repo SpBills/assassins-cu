@@ -1,7 +1,13 @@
 <template>
 	<div>
-		<h1>{{error}}</h1>
-
+		<h1>{{ error }}</h1>
+		<button
+			class="bg-blue-500 p-3 mt-5 rounded text-white"
+			@click="login"
+			v-if="!loggedIn"
+		>
+			LOGIN
+		</button>
 	</div>
 </template>
 
@@ -14,10 +20,20 @@ import {
 	signInWithPopup,
 	User,
 } from "firebase/auth";
-import { arrayUnion, collection, doc, DocumentData, getDoc, getDocs, getFirestore, setDoc, updateDoc } from "firebase/firestore";
-import { useRoute, useRouter } from 'vue-router';
-import Game from '@/models/Game';
-import EnrolledUser from '@/models/EnrolledUser';
+import {
+	arrayUnion,
+	collection,
+	doc,
+	DocumentData,
+	getDoc,
+	getDocs,
+	getFirestore,
+	setDoc,
+	updateDoc,
+} from "firebase/firestore";
+import { useRoute, useRouter } from "vue-router";
+import Game from "@/models/Game";
+import EnrolledUser from "@/models/EnrolledUser";
 export default {
 	setup() {
 		const route = useRoute();
@@ -26,6 +42,7 @@ export default {
 		const auth = getAuth();
 		const db = getFirestore();
 		const error = ref("");
+		const loggedIn = ref(false);
 		const user = ref({} as User);
 		const games: DocumentData[] = [];
 		const login = async () => {
@@ -33,19 +50,17 @@ export default {
 			await signInWithPopup(auth, provider);
 
 			const userRef = doc(db, "users", user.value.email!);
-			setDoc(userRef, { game: "" }, { merge: true });
-
-			error.value = "Log in please!"
-
-			join();
+			setDoc(userRef, { logged: true }, { merge: true });
 		};
 
 		const getUser = async () => {
 			onAuthStateChanged(auth, (u) => {
 				if (u) {
 					user.value = u!;
+					loggedIn.value = true;
+					join();
 				} else {
-					login();
+					error.value = "Log in to join this game.";
 				}
 			});
 		};
@@ -61,10 +76,16 @@ export default {
 				name: user.value.displayName,
 				email: user.value.email,
 				sortId: Math.floor(Math.random() * 100000),
-				eliminated: false
+				eliminated: false,
 			} as EnrolledUser;
 
+			if (gameData.users.find((user) => user.email === userObj.email) !== undefined) {
+				router.replace("/");
+				return;
+			}
+
 			if (!gameData.won) {
+				console.log("hit");
 				await updateDoc(gameRef, {
 					users: arrayUnion(userObj),
 				});
@@ -72,7 +93,7 @@ export default {
 				await updateDoc(userRef, {
 					game: game.id,
 				});
-				router.push("/")
+				router.replace("/");
 			} else {
 				error.value = "Game has already finished.";
 			}
@@ -85,15 +106,16 @@ export default {
 			});
 
 			await getUser();
-			join();
 		};
 
 		onLoad();
 
 		return {
 			user,
-			error
-		}
+			error,
+			loggedIn,
+			login,
+		};
 	},
 };
 </script>
