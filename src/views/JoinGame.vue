@@ -78,6 +78,7 @@ export default {
 			if (gameData.users.find((user) => user.email === userObj.email) !== undefined) {
 				// Do something later.
 				// TODO
+				router.replace("/");
 			}
 
 			if (!gameData.won) {
