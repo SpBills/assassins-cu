@@ -19,18 +19,33 @@
 					>
 						Logout
 					</button>
-					<button
-						class="bg-gray-700 p-3 rounded text-white"
-						@click="createGame"
-					>
-						Create Game
-					</button>
-					<button
-						class="bg-gray-700 p-3 rounded text-white"
-						@click="joinGame"
-					>
-						Join Game
-					</button>
+
+					<template v-if="!gameId">
+						<button
+							class="bg-gray-700 p-3 rounded text-white"
+							@click="createGame"
+						>
+							Create Game
+						</button>
+						<button
+							class="bg-gray-700 p-3 rounded text-white"
+							@click="joinGame"
+						>
+							Join Game
+						</button>
+					</template>
+					<template v-else>
+						<button
+							class="bg-gray-100 cursor-default p-3 rounded text-white"
+						>
+							Create Game
+						</button>
+						<button
+							class="bg-gray-100 cursor-default p-3 rounded text-white"
+						>
+							Join Game
+						</button>
+					</template>
 				</div>
 				<div v-else></div>
 
@@ -74,12 +89,7 @@ import CurrentGame from "@/components/CurrentGame.vue";
 import GameData from "@/components/GameData.vue";
 import MainSkeleton from "@/components/MainSkeleton.vue";
 import Footer from "@/components/Footer.vue";
-import {
-	doc,
-	getFirestore,
-	getDoc,
-	setDoc,
-} from "firebase/firestore";
+import { doc, getFirestore, getDoc, setDoc } from "firebase/firestore";
 import Game from "@/models/Game";
 
 export default {
