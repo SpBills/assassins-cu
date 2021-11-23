@@ -12,7 +12,7 @@
 			</button>
 		</div>
 		<div v-else>
-			<game-data :gameId="gameId" />
+			<game-data :gameId="gameId" :game="currentGame" />
 			<small>Copy this and send it to everyone participating!</small>
 
 			<button
@@ -50,6 +50,7 @@ export default {
 	setup() {
 		const router = useRouter();
 		const gameName = ref("");
+		const currentGame = ref({} as Game);
 		const db = getFirestore();
 		const gamesCollection = collection(db, "games");
 		var user = {} as User;
@@ -79,6 +80,8 @@ export default {
 				users: [userObj],
 			} as Game;
 
+			currentGame.value = game;
+
 			const createdDoc = await addDoc(gamesCollection, game);
 
 			const userRef = doc(db, "users", user.email!);
@@ -98,6 +101,7 @@ export default {
 			create,
 			gameId,
 			back,
+			currentGame
 		};
 	},
 };

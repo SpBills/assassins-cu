@@ -46,7 +46,7 @@
 						@changeGameId="changeGameId"
 					/>
 					<h2 v-else-if="!loggedIn()">Not logged in.</h2>
-					<h2 v-else-if="!game">No game found.</h2>
+					<h2 v-else-if="!gameId">No game found.</h2>
 				</main-skeleton>
 
 				<main-skeleton v-if="gameId" class="mt-5">
@@ -119,7 +119,6 @@ export default {
 
 		const changeGame = (evt: Game) => {
 			game.value = evt;
-			console.log(evt);
 		};
 
 		const changeGameId = (evt: string) => {

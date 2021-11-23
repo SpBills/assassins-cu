@@ -66,7 +66,6 @@ import {
 	arrayRemove,
 	arrayUnion,
 	doc,
-	getDoc,
 	getFirestore,
 	updateDoc,
 } from "firebase/firestore";
@@ -74,6 +73,7 @@ import { toRef } from "vue";
 import EnrolledUser from "@/models/EnrolledUser";
 import { User } from "firebase/auth";
 import Game from "@/models/Game";
+import { getGameFromId } from '@/utils/Game';
 export default {
 	props: {
 		game: {
@@ -133,12 +133,12 @@ export default {
 				game: "",
 			});
 			emit("changeGame", "");
+			emit("changeGameId", "");
 		};
 
 		const getTarget = async () => {
-			const gameRef = doc(db, "games", gameName.value);
-			const gameDoc = await getDoc(gameRef);
-			const fullGame = (gameDoc).data()! as Game;
+			const gameDoc = await getGameFromId(db, gameName.value);
+			const fullGame = gameDoc.data()! as Game;
 			emit("changeGame", fullGame);
 			emit("changeGameId", gameDoc.id);
 			game.value = fullGame;

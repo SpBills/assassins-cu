@@ -21,19 +21,12 @@ import {
 	User,
 } from "firebase/auth";
 import {
-	arrayUnion,
-	collection,
 	doc,
-	DocumentData,
-	getDoc,
-	getDocs,
 	getFirestore,
 	setDoc,
-	updateDoc,
 } from "firebase/firestore";
-import { useRoute, useRouter } from "vue-router";
-import Game from "@/models/Game";
-import EnrolledUser from "@/models/EnrolledUser";
+import { joinGameFromId } from '@/utils/Game';
+import { useRoute, useRouter } from 'vue-router';
 export default {
 	setup() {
 		const route = useRoute();
@@ -44,7 +37,6 @@ export default {
 		const error = ref("");
 		const loggedIn = ref(false);
 		const user = ref({} as User);
-		const games: DocumentData[] = [];
 		const login = async () => {
 			const provider = new GoogleAuthProvider();
 			await signInWithPopup(auth, provider);
@@ -66,45 +58,18 @@ export default {
 		};
 
 		const join = async () => {
-			const id = route.params.id.toString();
-			const game = games.find((game) => game.id == id)!;
-			const gameData = game.data() as Game;
-			const gameRef = doc(db, "games", id);
-			const userRef = doc(db, "users", user.value.email!);
-
-			const userObj = {
-				name: user.value.displayName,
-				email: user.value.email,
-				sortId: Math.floor(Math.random() * 100000),
-				eliminated: false,
-			} as EnrolledUser;
-
-			if (gameData.users.find((user) => user.email === userObj.email) !== undefined) {
-				router.replace("/");
-				return;
+			const gameId = route.params.id as string;
+			
+			try {
+				await joinGameFromId(db, user.value, gameId);
+			} catch (e: any) {
+				error.value = e;
 			}
 
-			if (!gameData.won) {
-				console.log("hit");
-				await updateDoc(gameRef, {
-					users: arrayUnion(userObj),
-				});
-
-				await updateDoc(userRef, {
-					game: game.id,
-				});
-				router.replace("/");
-			} else {
-				error.value = "Game has already finished.";
-			}
+			router.push("/");
 		};
 
 		const onLoad = async () => {
-			const querySnapshot = await getDocs(collection(db, "games"));
-			querySnapshot.forEach((doc) => {
-				games.push(doc);
-			});
-
 			await getUser();
 		};
 

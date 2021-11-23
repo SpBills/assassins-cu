@@ -17,26 +17,21 @@
 
 <script lang="ts">
 import {
-	collection,
-	doc,
 	getFirestore,
-	getDocs,
 	DocumentData,
-	updateDoc,
-	arrayUnion,
 } from "firebase/firestore";
-import EnrolledUser from "@/models/EnrolledUser";
 import { ref } from "@vue/reactivity";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { useRouter } from "vue-router";
-import Game from "@/models/Game";
 import MainSkeleton from "../components/MainSkeleton.vue";
+import { joinGameFromId } from '@/utils/Game';
+import { useRouter } from 'vue-router';
 export default {
 	components: {
 		MainSkeleton
 	},
 	setup() {
 		const router = useRouter();
+
 		const gameId = ref("");
 		const error = ref("");
 		var user = {} as User;
@@ -53,46 +48,18 @@ export default {
 
 		const onLoad = async () => {
 			getUser();
-
-			const querySnapshot = await getDocs(collection(db, "games"));
-			querySnapshot.forEach((doc) => {
-				games.push(doc);
-			});
 		};
 
 		onLoad();
 
 		const join = async () => {
-			const game = games.find((game) => game.id == gameId.value)!;
-			const gameData = game.data() as Game;
-			const gameRef = doc(db, "games", game.id);
-			const userRef = doc(db, "users", user.email!);
-
-			const userObj = {
-				name: user.displayName,
-				email: user.email,
-				sortId: Math.floor(Math.random() * 100000),
-				eliminated: false
-			} as EnrolledUser;
-
-			if (gameData.users.find((user) => user.email === userObj.email) !== undefined) {
-				// Do something later.
-				// TODO
-				router.replace("/");
+			try {
+				await joinGameFromId(db, user, gameId.value);
+			} catch (e: any) {
+				error.value = e;
 			}
 
-			if (!gameData.won) {
-				await updateDoc(gameRef, {
-					users: arrayUnion(userObj),
-				});
-
-				await updateDoc(userRef, {
-					game: game.id,
-				});
-				router.replace("/");
-			} else {
-				error.value = "Game has already finished.";
-			}
+			router.push("/");
 		};
 
 		return {
