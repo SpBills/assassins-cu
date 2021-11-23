@@ -43,7 +43,7 @@ export default {
 			required: false,
 		},
 	},
-	setup(props) {
+	setup(props: any) {
 		const db = getFirestore();
 		const game = toRef(props, "game") as Ref<Game>;
 		const copied = ref(false);
