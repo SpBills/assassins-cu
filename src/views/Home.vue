@@ -1,77 +1,71 @@
 <template>
-    <div class="h-screen">
-        <div
-            v-if="!loggedIn()"
-            class="h-screen w-full flex flex-col justify-center items-center"
-        >
-            <main-skeleton class="w-1/4 flex flex-col justify-center">
-                <button
-                    class="bg-gray-700 p-3 rounded text-white"
-                    @click="login"
-                >
-                    Login
-                </button>
-            </main-skeleton>
-        </div>
-        <div v-else class="w-100 h-full flex flex-col justify-between">
-            <div>
-                <div class="flex justify-around" v-if="loggedIn()">
-                    <button
-                        class="bg-gray-700 p-3 rounded text-white"
-                        @click="logout"
-                    >
-                        Logout
-                    </button>
-                    <button
-                        class="bg-gray-700 p-3 rounded text-white"
-                        @click="createGame"
-                    >
-                        Create Game
-                    </button>
-                    <button
-                        class="bg-gray-700 p-3 rounded text-white"
-                        @click="joinGame"
-                    >
-                        Join Game
-                    </button>
-                </div>
-                <div v-else></div>
+	<div>
+		<div v-if="!loggedIn()">
+			<main-skeleton class="w-1/4 flex flex-col justify-center">
+				<button
+					class="bg-gray-700 p-3 rounded text-white"
+					@click="login"
+				>
+					Login
+				</button>
+			</main-skeleton>
+		</div>
+		<div v-else class="w-100 h-full flex flex-col justify-between">
+			<div>
+				<div class="flex justify-around" v-if="loggedIn()">
+					<button
+						class="bg-gray-700 p-3 rounded text-white"
+						@click="logout"
+					>
+						Logout
+					</button>
+					<button
+						class="bg-gray-700 p-3 rounded text-white"
+						@click="createGame"
+					>
+						Create Game
+					</button>
+					<button
+						class="bg-gray-700 p-3 rounded text-white"
+						@click="joinGame"
+					>
+						Join Game
+					</button>
+				</div>
+				<div v-else></div>
 
-                <main-skeleton class="mt-5">
-                    <small class="text-xs"
-                        >You are currently logged in as {{ user.email }}</small
-                    >
-                    <current-game
-                        v-if="loggedIn() && game"
-                        :game="game"
-                        :user="user"
-                        @changeGame="changeGame"
-                    />
-                    <h2 v-else-if="!loggedIn()">Not logged in.</h2>
-                    <h2 v-else-if="!game">No game found.</h2>
-                </main-skeleton>
+				<main-skeleton class="mt-5">
+					<small class="text-xs"
+						>You are currently logged in as {{ user.email }}</small
+					>
+					<current-game
+						v-if="loggedIn() && gameId"
+						:game="gameId"
+						:user="user"
+						@changeGame="changeGame"
+						@changeGameId="changeGameId"
+					/>
+					<h2 v-else-if="!loggedIn()">Not logged in.</h2>
+					<h2 v-else-if="!game">No game found.</h2>
+				</main-skeleton>
 
-                <main-skeleton v-if="game" class="mt-5">
-                    <h1 class="font-bold mb-3 text-xl">Current game</h1>
-                    <game-data :gameId="game" />
-                </main-skeleton>
-            </div>
-
-            <main-skeleton>
-                <Footer />
-            </main-skeleton>
-        </div>
-    </div>
+				<main-skeleton v-if="gameId" class="mt-5">
+					<h1 class="font-bold mb-3 text-xl">Current game</h1>
+					<game-data :gameId="gameId" :game="game" />
+				</main-skeleton>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script lang="ts">
 import {
-    signInWithPopup,
-    getAuth,
-    GoogleAuthProvider,
-    onAuthStateChanged,
-    signOut,
-    User,
+	signInWithPopup,
+	getAuth,
+	GoogleAuthProvider,
+	onAuthStateChanged,
+	signOut,
+	User,
 } from "firebase/auth";
 
 import { ref } from "@vue/reactivity";
@@ -80,70 +74,84 @@ import CurrentGame from "@/components/CurrentGame.vue";
 import GameData from "@/components/GameData.vue";
 import MainSkeleton from "@/components/MainSkeleton.vue";
 import Footer from "@/components/Footer.vue";
-import { doc, getFirestore, getDoc, setDoc } from "firebase/firestore";
+import {
+	doc,
+	getFirestore,
+	getDoc,
+	setDoc,
+} from "firebase/firestore";
+import Game from "@/models/Game";
 
 export default {
-    components: { CurrentGame, GameData, MainSkeleton, Footer },
-    setup() {
-        const router = useRouter();
-        const db = getFirestore();
-        var user = ref({} as User);
-        const game = ref("");
+	components: { CurrentGame, GameData, MainSkeleton, Footer },
+	setup() {
+		const router = useRouter();
+		const db = getFirestore();
+		var user = ref({} as User);
+		const game = ref({} as Game);
+		const gameId = ref("");
 
-        const auth = getAuth();
+		const auth = getAuth();
 
-        const login = async () => {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
+		const login = async () => {
+			const provider = new GoogleAuthProvider();
+			await signInWithPopup(auth, provider);
 
-            const userRef = doc(db, "users", user.value.email!);
-            setDoc(userRef, { logged: true }, { merge: true });
-        };
+			const userRef = doc(db, "users", user.value.email!);
+			setDoc(userRef, { logged: true }, { merge: true });
+		};
 
-        const logout = async () => {
-            await signOut(auth);
-        };
+		const logout = async () => {
+			await signOut(auth);
+		};
 
-        const getUser = async () => {
-            onAuthStateChanged(auth, async (u) => {
-                user.value = u!;
-                const email = user.value.email!;
+		const getUser = async () => {
+			onAuthStateChanged(auth, async (u) => {
+				user.value = u!;
+				const email = user.value.email!;
 
-                const userRef = doc(db, "users", email);
-                const docSnap = await getDoc(userRef);
+				const userRef = doc(db, "users", email);
+				const docSnap = await getDoc(userRef);
 
-                game.value = docSnap.data()!.game;
-            });
-        };
+				gameId.value = docSnap.data()!.game;
+			});
+		};
 
-        const changeGame = (evt: string) => {
-            game.value = evt;
-        };
+		const changeGame = (evt: Game) => {
+			game.value = evt;
+			console.log(evt);
+		};
 
-        const loggedIn = () => {
-            return user.value;
-        };
+		const changeGameId = (evt: string) => {
+			gameId.value = evt;
+		};
 
-        const createGame = () => {
-            router.push({ path: "create" });
-        };
+		const loggedIn = () => {
+			return user.value;
+		};
 
-        const joinGame = () => {
-            router.push({ path: "join" });
-        };
+		const createGame = () => {
+			router.push({ path: "create" });
+		};
 
-        getUser();
+		const joinGame = () => {
+			router.push({ path: "join" });
+		};
 
-        return {
-            login,
-            logout,
-            user,
-            loggedIn,
-            createGame,
-            joinGame,
-            game,
-            changeGame,
-        };
-    },
+		getUser();
+
+		return {
+			login,
+			logout,
+			user,
+			loggedIn,
+			createGame,
+			joinGame,
+			game,
+			gameId,
+			changeGame,
+			changeGameId,
+		};
+	},
 };
 </script>

@@ -85,7 +85,7 @@ export default {
 			required: true,
 		},
 	},
-	emits: ["changeGame"],
+	emits: ["changeGame", "changeGameId"],
 	setup(props: any, context: any) {
 		const emit = context.emit;
 
@@ -105,16 +105,15 @@ export default {
 
 		const dead = async () => {
 			const gameRef = doc(db, "games", gameName.value);
-			const fullGame = (await getDoc(gameRef)).data()!;
 
-			let enrolledUser = fullGame.users.find(
+			let enrolledUser = game.value.users.find(
 				(enrolled: EnrolledUser) => enrolled.email == user.value.email
-			);
+			)!;
 
 			// Check if there will only be one user left after removing this user.
 			await updateDoc(gameRef, {
 				users: arrayRemove(enrolledUser),
-				won: fullGame.users.length - 1 === 1,
+				won: game.value.users.length - 1 === 1,
 			});
 			enrolledUser.eliminated = true;
 			elim.value = true;
@@ -138,7 +137,10 @@ export default {
 
 		const getTarget = async () => {
 			const gameRef = doc(db, "games", gameName.value);
-			const fullGame = (await getDoc(gameRef)).data()! as Game;
+			const gameDoc = await getDoc(gameRef);
+			const fullGame = (gameDoc).data()! as Game;
+			emit("changeGame", fullGame);
+			emit("changeGameId", gameDoc.id);
 			game.value = fullGame;
 
 			const players = fullGame.users as EnrolledUser[];
@@ -171,7 +173,8 @@ export default {
 			target.value = nextPlayer.name + " (" + nextPlayer.email + ")";
 		};
 
-		setInterval(getTarget, 1000);
+		getTarget();
+		setInterval(getTarget, 10000);
 
 		return {
 			target,
