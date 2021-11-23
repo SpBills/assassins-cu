@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col">
+	<div class="flex flex-col" v-if="gameExists()">
 		<div>
 			<h1 v-if="!game.started">Game has not been started yet. There are {{game.users.length}} player(s) in the game.</h1>
 			<h1 class="text-4xl font-extrabold" v-else-if="won">
@@ -127,6 +127,10 @@ export default {
 			elimPrompt.value = false;
 		};
 
+		const gameExists = async () => {
+			return Object.keys(game).length > 0;
+		}
+
 		const leave = async () => {
 			const userRef = doc(db, "users", user.value.email!);
 
@@ -187,6 +191,7 @@ export default {
 			game,
 			elim,
 			winner,
+			gameExists
 		};
 	},
 };

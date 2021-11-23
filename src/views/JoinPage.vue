@@ -66,7 +66,7 @@ export default {
 				error.value = e;
 			}
 
-			router.push("/");
+			router.replace("/");
 		};
 
 		const onLoad = async () => {
