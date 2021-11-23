@@ -36,12 +36,24 @@
 					</template>
 					<template v-else>
 						<button
-							class="bg-gray-100 cursor-default p-3 rounded text-white"
+							class="
+								bg-gray-100
+								cursor-default
+								p-3
+								rounded
+								text-white
+							"
 						>
 							Create Game
 						</button>
 						<button
-							class="bg-gray-100 cursor-default p-3 rounded text-white"
+							class="
+								bg-gray-100
+								cursor-default
+								p-3
+								rounded
+								text-white
+							"
 						>
 							Join Game
 						</button>
@@ -53,6 +65,7 @@
 					<small class="text-xs"
 						>You are currently logged in as {{ user.email }}</small
 					>
+
 					<current-game
 						v-if="loggedIn() && gameId"
 						:game="gameId"
@@ -64,9 +77,9 @@
 					<h2 v-else-if="!gameId">No game found.</h2>
 				</main-skeleton>
 
-				<main-skeleton v-if="gameId" class="mt-5">
+				<main-skeleton v-if="gameId && user" class="mt-5">
 					<h1 class="font-bold mb-3 text-xl">Current game</h1>
-					<game-data :gameId="gameId" :game="game" />
+					<game-data :gameId="gameId" :game="game" :userEmail="user.email" />
 				</main-skeleton>
 			</div>
 		</div>
@@ -115,17 +128,15 @@ export default {
 			await signOut(auth);
 		};
 
-		const getUser = async () => {
-			onAuthStateChanged(auth, async (u) => {
-				user.value = u!;
-				const email = user.value.email!;
+		onAuthStateChanged(auth, async (u) => {
+			user.value = u!;
+			const email = user.value.email!;
 
-				const userRef = doc(db, "users", email);
-				const docSnap = await getDoc(userRef);
+			const userRef = doc(db, "users", email);
+			const docSnap = await getDoc(userRef);
 
-				gameId.value = docSnap.data()!.game;
-			});
-		};
+			gameId.value = docSnap.data()!.game;
+		});
 
 		const changeGame = (evt: Game) => {
 			game.value = evt;
@@ -146,8 +157,6 @@ export default {
 		const joinGame = () => {
 			router.push({ path: "join" });
 		};
-
-		getUser();
 
 		return {
 			login,

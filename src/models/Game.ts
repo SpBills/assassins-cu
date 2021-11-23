@@ -8,7 +8,9 @@ import {
 export default interface Game {
     name: string,
     time: Timestamp,
+    started: boolean,
     won: boolean,
     users: EnrolledUser[],
-    eliminated: EnrolledUser[]
+    eliminated: EnrolledUser[],
+    owner: EnrolledUser,
 }

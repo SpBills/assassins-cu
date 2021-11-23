@@ -1,7 +1,8 @@
 <template>
 	<div class="flex flex-col">
 		<div>
-			<h1 class="text-4xl font-extrabold" v-if="won">
+			<h1 v-if="!game.started">Game has not been started yet. There are {{game.users.length}} player(s) in the game.</h1>
+			<h1 class="text-4xl font-extrabold" v-else-if="won">
 				{{ winner }} has won the game!
 			</h1>
 			<h1 v-else-if="elim">
@@ -15,7 +16,7 @@
 			<button
 				class="p-5 bg-gray-700 rounded font-bold text-white mt-5"
 				@click="leave"
-				v-if="won || alone || elim"
+				v-if="!game.started || won || alone || elim"
 			>
 				Leave
 			</button>
@@ -26,7 +27,7 @@
 						elimPrompt = true;
 					}
 				"
-				v-if="!alone && !elim && !won"
+				v-else-if="!alone && !elim && !won"
 			>
 				Eliminated
 			</button>

@@ -35,8 +35,6 @@ export default {
 		const gameId = ref("");
 		const error = ref("");
 		var user = {} as User;
-		const games: DocumentData[] = [];
-
 		const db = getFirestore();
 		const auth = getAuth();
 

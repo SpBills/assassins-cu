@@ -3,11 +3,16 @@ import Game from '@/models/Game';
  * This file defines a bunch of service functions for joining, leaving, and other actions to do with Games.
  */
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import { arrayUnion, doc, Firestore, getDoc, updateDoc } from "firebase/firestore";
+import { arrayUnion, doc, Firestore, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import EnrolledUser from "@/models/EnrolledUser";
 
 const leave = () => {
 
+}
+
+const startGame = async (db: Firestore, gameId: string) => {
+    const gameRef = doc(db, "games", gameId);
+    updateDoc(gameRef, { started: true });
 }
 
 const joinGameFromId = async (db: Firestore, user: User, gameId: string) => {
@@ -55,5 +60,6 @@ const getGameFromId = async (db: Firestore, gameName: string) => {
 export {
     getGameFromId,
     joinGameFromId,
-    leave
+    leave,
+    startGame
 }

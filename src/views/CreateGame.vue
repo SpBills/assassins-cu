@@ -38,14 +38,14 @@ import {
 import { ref } from "@vue/reactivity";
 import { useRouter } from "vue-router";
 import { getAuth, onAuthStateChanged, User } from "firebase/auth";
-import GameData from '../components/GameData.vue';
-import Game from "@/models/Game"
-import EnrolledUser from '@/models/EnrolledUser';
-import MainSkeleton from "../components/MainSkeleton.vue"
+import GameData from "../components/GameData.vue";
+import Game from "@/models/Game";
+import EnrolledUser from "@/models/EnrolledUser";
+import MainSkeleton from "../components/MainSkeleton.vue";
 export default {
 	components: {
 		GameData,
-		MainSkeleton
+		MainSkeleton,
 	},
 	setup() {
 		const router = useRouter();
@@ -56,13 +56,9 @@ export default {
 		var user = {} as User;
 		const auth = getAuth();
 
-		const getUser = () => {
-			onAuthStateChanged(auth, (u) => {
-				user = u!;
-			});
-		};
-
-		getUser();
+		onAuthStateChanged(auth, (u) => {
+			user = u!;
+		});
 
 		const gameId = ref("");
 
@@ -71,13 +67,16 @@ export default {
 				email: user.email,
 				name: user.displayName,
 				sortId: Math.floor(Math.random() * 100000),
-				eliminated: false
+				eliminated: false,
 			} as EnrolledUser;
 
 			const game = {
 				name: gameName.value,
 				time: Timestamp.now(),
 				users: [userObj],
+				owner: userObj,
+				started: false,
+				won: false
 			} as Game;
 
 			currentGame.value = game;
@@ -101,7 +100,7 @@ export default {
 			create,
 			gameId,
 			back,
-			currentGame
+			currentGame,
 		};
 	},
 };
