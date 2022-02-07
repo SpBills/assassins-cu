@@ -29,7 +29,7 @@
 				"
 				v-else-if="!alone && !elim && !won"
 			>
-				Eliminated
+				I Have Been Eliminated
 			</button>
 		</div>
 

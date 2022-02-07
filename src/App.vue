@@ -9,15 +9,7 @@
 	</div>
 </template>
 
-<script>
+<script lang="ts" setup>
 import Footer from "./components/Footer.vue";
 import MainSkeleton from "./components/MainSkeleton.vue";
-
-export default {
-	components: {
-		Footer,
-		MainSkeleton,
-	},
-	setup() {},
-};
 </script>

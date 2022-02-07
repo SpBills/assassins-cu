@@ -2,72 +2,32 @@
 	<div>
 		<div v-if="!loggedIn()">
 			<main-skeleton class="w-1/4 flex flex-col justify-center">
-				<button
-					class="bg-gray-700 p-3 rounded text-white"
-					@click="login"
-				>
-					Login
-				</button>
+				<button class="bg-gray-700 p-3 rounded text-white" @click="login">Login</button>
 			</main-skeleton>
 		</div>
 		<div v-else class="w-100 h-full flex flex-col justify-between">
 			<div>
 				<div class="flex justify-around" v-if="loggedIn()">
-					<button
-						class="bg-gray-700 p-3 rounded text-white"
-						@click="logout"
-					>
-						Logout
-					</button>
+					<button class="bg-gray-700 p-3 rounded text-white" @click="logout">Logout</button>
 
 					<template v-if="!gameId">
-						<button
-							class="bg-gray-700 p-3 rounded text-white"
-							@click="createGame"
-						>
-							Create Game
-						</button>
-						<button
-							class="bg-gray-700 p-3 rounded text-white"
-							@click="joinGame"
-						>
-							Join Game
-						</button>
+						<button class="bg-gray-700 p-3 rounded text-white" @click="createGame">Create Game</button>
+						<button class="bg-gray-700 p-3 rounded text-white" @click="joinGame">Join Game</button>
 					</template>
 					<template v-else>
-						<button
-							class="
-								bg-gray-100
-								cursor-default
-								p-3
-								rounded
-								text-white
-							"
-						>
-							Create Game
-						</button>
-						<button
-							class="
-								bg-gray-100
-								cursor-default
-								p-3
-								rounded
-								text-white
-							"
-						>
-							Join Game
-						</button>
+						<button class="bg-gray-100 cursor-default p-3 rounded text-white">Create Game</button>
+						<button class="bg-gray-100 cursor-default p-3 rounded text-white">Join Game</button>
 					</template>
 				</div>
 				<div v-else></div>
 
-				<main-skeleton class="mt-5">
-					<small class="text-xs"
-						>You are currently logged in as {{ user.email }}</small
-					>
+				<main-skeleton class="mt-5 h-64 flex flex-col justify-evenly">
+					<small class="text-xs mb-5">You are currently logged in as {{ user.email }}</small>
 
+					<LoadingBar class="mx-auto w-1/2" v-if="loading" />
 					<current-game
-						v-if="loggedIn() && gameId"
+						class="flex-1"
+						v-else-if="loggedIn() && gameId"
 						:game="gameId"
 						:user="user"
 						@changeGame="changeGame"
@@ -104,15 +64,18 @@ import MainSkeleton from "@/components/MainSkeleton.vue";
 import Footer from "@/components/Footer.vue";
 import { doc, getFirestore, getDoc, setDoc } from "firebase/firestore";
 import Game from "@/models/Game";
+import LoadingBar from "../components/LoadingBar.vue";
 
 export default {
-	components: { CurrentGame, GameData, MainSkeleton, Footer },
+	components: { CurrentGame, GameData, MainSkeleton, Footer, LoadingBar },
 	setup() {
 		const router = useRouter();
 		const db = getFirestore();
 		var user = ref({} as User);
 		const game = ref({} as Game);
 		const gameId = ref("");
+
+		const loading = ref(true);
 
 		const auth = getAuth();
 
@@ -137,6 +100,7 @@ export default {
 			const docSnap = await getDoc(userRef);
 
 			gameId.value = docSnap.data()!.game;
+			loading.value = false;
 		});
 
 		const changeGame = (evt: Game) => {
@@ -162,6 +126,7 @@ export default {
 		return {
 			login,
 			logout,
+			loading,
 			user,
 			loggedIn,
 			createGame,
