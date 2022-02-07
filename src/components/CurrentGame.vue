@@ -128,7 +128,17 @@ export default {
 		};
 
 		const leave = async () => {
+			const gameRef = doc(db, "games", gameName.value);
 			const userRef = doc(db, "users", user.value.email!);
+
+			// if the game is not started, remove the user completely from the game.
+			if (!game.value.started) {
+				const currUser = game.value.users.find((u) => u.email === user.value.email);
+				console.log(currUser);
+				await updateDoc(gameRef, {
+					users: arrayRemove(currUser)
+				});
+			}
 
 			await updateDoc(userRef, {
 				game: "",
