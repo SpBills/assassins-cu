@@ -125,6 +125,7 @@ export default {
 		};
 
 		const logout = async () => {
+			window.location.reload();
 			await signOut(auth);
 		};
 
@@ -147,7 +148,7 @@ export default {
 		};
 
 		const loggedIn = () => {
-			return user.value;
+			return user.value && Object.keys(user.value).length > 0;
 		};
 
 		const createGame = () => {
