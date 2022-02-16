@@ -4,7 +4,7 @@
 		<a class="ml-auto text-blue-400" href="bitcoincash:qz8k8y59juyt4k8594v4rf9cp5uzmgrctcjklzq502"
 			>
             Consider Donating
-			<small class="text-xs">(as low as $0.01!)</small>
+			<small class="text-xs">(as low as $0.01! or PayPal spencebills0@gmail.com)</small>
             </a
 		>
 	</div>

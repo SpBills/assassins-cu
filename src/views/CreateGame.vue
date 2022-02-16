@@ -1,11 +1,11 @@
 <template>
 	<main-skeleton>
-		<div v-if="!gameId">
+		<div v-if="!gameId" class="flex flex-col md:block">
 			<p>Enter the name of your party</p>
-			<input class="border-b-2" v-model="gameName" type="text" />
+			<input class="border-b-2 mt-3" placeholder="Game Name" v-model="gameName" type="text" />
 
 			<button
-				class="bg-blue-500 text-white px-5 py-3 rounded ml-5"
+				class="bg-blue-500 text-white px-5 py-3 rounded mt-5 md:ml-10"
 				@click="create"
 			>
 				Create
@@ -17,7 +17,7 @@
 
 			<button
 				@click="back"
-				class="bg-blue-500 text-white px-5 py-3 rounded ml-5"
+				class="bg-blue-500 text-white px-5 py-3 rounded md:ml-5"
 			>
 				Go back
 			</button>

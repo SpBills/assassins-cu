@@ -21,7 +21,7 @@
 				</div>
 				<div v-else></div>
 
-				<main-skeleton class="mt-5 h-64 flex flex-col justify-evenly">
+				<main-skeleton class="mt-5 flex flex-col justify-evenly">
 					<small class="text-xs mb-5">You are currently logged in as {{ user.email }}</small>
 
 					<LoadingBar class="mx-auto w-1/2" v-if="loading" />
