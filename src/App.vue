@@ -1,6 +1,6 @@
 <template>
-	<div class="p-5 h-screen">
-		<div class="h-full flex flex-col justify-between">
+	<div class="p-5 min-h-screen">
+		<div class="h-screen flex flex-col justify-between">
 			<router-view />
 			<main-skeleton>
 				<Footer />
